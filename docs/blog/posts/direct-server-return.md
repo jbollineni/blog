@@ -40,10 +40,6 @@ However, the client request egressing the load balancer with destination address
 
 For the server to decapsulate the GRE or IPIP traffic, a tunnel interface is needed with the same IP address as that of its physical interface receiving the traffic. After decapsulation, the original client request with the VIP address as destination address reaches the loopback interface for processing. The server responds with the source address as the loopback interface IP (VIP address), instead of the physical interface address.
 
-## TEST Abc
-### TEST xyz
-#### TEST pqr
-
 ## F5 Configuration
 ~~~ go
 ltm profile fastl4 fasl4_tacacs-test {
