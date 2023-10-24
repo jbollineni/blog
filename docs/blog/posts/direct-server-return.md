@@ -63,7 +63,8 @@ ltm pool p_tacacs-test_49 {
         }
     }
     profiles {
-        ipip                       #<-- Using IPIP tunneling
+        ipip                       (1)#<-- Using IPIP tunneling
+        { .annotate }
     }
 }
 
@@ -81,6 +82,55 @@ ltm virtual vs_tacacs-test_49 {
     vs-index 17
 }
 ~~~
+1.  :man_raising_hand: I'm an annotation! I can contain `code`, __formatted
+    text__, images, ... basically anything that can be expressed in Markdown.
+
+
+
+Lorem ipsum dolor sit amet, (1) consectetur adipiscing elit.
+{ .annotate }
+
+1.  :man_raising_hand: I'm an annotation! I can contain `code`, __formatted
+    text__, images, ... basically anything that can be expressed in Markdown.
+
+
+## A10 Configuration
+
+```
+health monitor m_radius-test_radius 
+  method radius username lbuser@LOCAL password encrypted encypted-password secret secret123 
+!
+
+slb server 10.1.1.51 10.1.1.51
+  health-check-disable 
+  port 1645 udp 
+    health-check-disable 
+!
+slb server 10.1.1.52 10.1.1.52
+  health-check-disable 
+  port 1645 udp 
+    health-check-disable 
+!
+slb server 10.1.1.53 10.1.1.53
+  health-check-disable 
+  port 1645 udp 
+    health-check-disable 
+!
+slb service-group p_radius-test_udp_1645 udp 
+  health-check m_radius-test_radius 
+  member 10.1.1.51 1645 
+  member 10.1.1.52 1645 
+  member 10.1.1.53 1645 
+!
+slb virtual-server vs_radius-test 172.16.4.99 /32 
+  port 1645 udp 
+    name vs_radius-test_udp_1645 
+    service-group p_radius-test_udp_1645 
+    ipinip 
+    no-dest-nat 
+!
+
+```
 
 ## Linux Server Config
 
@@ -106,9 +156,9 @@ sysctl -w net.ipv4.conf.tunl0.rp_filter=0
 ~~~
 
 
-## Captures
+## Packet Captures
 
-Client:
+### Client
 ~~~ go
 [violet@srv-services-01 ~]$ tcpdump -s0 -nn  -r tacacs-capture.pcap 
 reading from file tacacs-capture.pcap, link-type EN10MB (Ethernet)
@@ -125,7 +175,7 @@ reading from file tacacs-capture.pcap, link-type EN10MB (Ethernet)
 23:14:10.140179 IP 192.168.11.201.61067 > 172.16.4.99.49: Flags [R.], seq 50, ack 48, win 0, length 0
 ~~~
 
-Load Balancer:
+### Load Balancer
 ~~~ go
 [red@adc:Active:Standalone] ~ # tcpdump  -vvv -s0 -nni 0.0 host 192.168.11.201
 tcpdump: listening on 0.0, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -173,7 +223,7 @@ tcpdump: listening on 0.0, link-type EN10MB (Ethernet), capture size 65535 bytes
     192.168.11.201.61067 > 172.16.4.99.49: Flags [R.], cksum 0x579a (correct), seq 49, ack 48, win 0, length 0 out slot1/tmm0 lis=
 ~~~
 
-Server:
+### Server
 ~~~ go
 [violet@srv-services-02 ~]$ sudo tcpdump -s0 -vvv -nni ens192 host 192.168.11.201
 tcpdump: listening on ens192, link-type EN10MB (Ethernet), capture size 262144 bytes
