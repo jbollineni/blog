@@ -1,11 +1,11 @@
 
 # Project information
-site_name: blog.neni.io
+site_name: blog
 site_url: https://blog.neni.io
 site_author: Jana Bollineni
 site_description: >-
   blog.neni.io
-  
+
 # Copyright
 #copyright: Copyright &copy; 2022 - 2023 Jana Bollineni
 
@@ -79,7 +79,7 @@ extra:
     json: [.s2]
   analytics:
     provider: google
-    property: UA-162254678-1
+    property: G-1E035RMMBB
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jbollineni
