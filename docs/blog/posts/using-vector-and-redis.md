@@ -1,7 +1,7 @@
 ---
 title: Using Vector and Redis for F5 Syslogs
-slug: using-vector-and-redis-for-f5-syslogs
-date: 2023-10-01
+slug: vector-redis-f5-syslogs
+date: 2023-11-13
 categories:
   - Observability
   - F5 BIG-IP syslog
@@ -10,7 +10,7 @@ tags:
   - Redis
   - Observability, F5 BIG-IP Syslog
 
-draft: true
+draft: false
 ---
 
 This article is part one of a series discussing various components and configurations to parse pool-related syslogs from an F5 Big-IP and store the pool member state and status information in a Redis database. This article focuses on Vector and Redis.
@@ -34,14 +34,21 @@ While Vector can be deployed in various roles in different topologies, this arti
 <br>
 **Vector Components**
 
-
-
 #### Sources
 
-The [Source](https://vector.dev/docs/reference/configuration/sources/) component ingests logs from various sources like - Kafka, Stdin, logs sent via Syslog, etc. Following is an example of using `Kafka` as a source. 
+The [Source](https://vector.dev/docs/reference/configuration/sources/) component ingests logs from various sources like - Kafka, Stdin, logs sent via Syslog, etc. Following are examples of using a `UDP socket` or `Kafka` as a sources.
 
+- UDP Socket Source
 ```toml
 ## SOURCE SECTION
+[sources.my_source_id]
+type = "socket"
+address = "10.1.1.100:8014"
+mode = "udp"
+```
+
+- Kafka Source
+```toml
 [sources.my_source_id]
 bootstrap_servers = "broker1.example.com:9094,broker2.example.com:9094,broker3.example.com:9094"
 group_id = "f5_logs"
@@ -75,42 +82,27 @@ source = '''
   {
   abort
   }
+
+    #Replace occurences of "\n" character in the log event
+    .message = replace(string!(.message), "\n", "")
   
-	#Begin parsing events that contain the keyword 'Pool'
-  . |= parse_groks!(
+	#Parsing log events that contain the keyword 'Pool'
+  . = parse_groks!(
       string!(.message),
       patterns: [
         #SLB related parser
-        "%{GREEDYDATA}<%{NUMBER}>%{SYSLOGTIMESTAMP:LBMONITORTIMESTAMP} %{HOSTNAME:DEVICENAME} %{LOGLEVEL:LOGLEVEL} %{DATA:SYSLOGPROG}(:) %{DATA:SYSLOGID}(:) Pool /Common/%{DATA:POOLNAME} member /Common/%{DATA:MEMBER} monitor status %{DATA:STATUS}(.) %{GREEDYDATA}",
-        "%{GREEDYDATA}<%{NUMBER}>%{SYSLOGTIMESTAMP:LBADMINTIMESTAMP} %{HOSTNAME:DEVICENAME} %{LOGLEVEL:LOGLEVEL} %{DATA:SYSLOGPROG}(:) %{DATA:SYSLOGID}(:) Pool /Common/%{DATA:POOLNAME} member /Common/%{DATA:MEMBER} session status %{DATA:STATE}(.)\\\\%{GREEDYDATA}",
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbmonitortimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{GREEDYDATA:poolname} member /Common/%{GREEDYDATA:member} monitor status %{DATA:status}. %{GREEDYDATA}",
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbadmintimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{GREEDYDATA:poolname} member /Common/%{GREEDYDATA:member} session status %{GREEDYDATA:state}.",
 
         #GSLB related parser
-        "%{GREEDYDATA}<%{NUMBER}>%{SYSLOGTIMESTAMP:LBMONITORTIMESTAMP} %{HOSTNAME:DEVICENAME} %{LOGLEVEL:LOGLEVEL} %{DATA:SYSLOGPROG}(:) %{DATA:SYSLOGID}(:) SNMP_TRAP: Pool /Common/%{DATA:POOLNAME} member %{DATA} \\(ip:port=%{DATA:MEMBER}\\) state change %{DATA:OLDSTATUS} --> %{DATA:STATUS} %{GREEDYDATA}",
-        "%{GREEDYDATA}<%{NUMBER}>%{SYSLOGTIMESTAMP:LBMONITORTIMESTAMP} %{HOSTNAME:DEVICENAME} %{LOGLEVEL:LOGLEVEL} %{DATA:SYSLOGPROG}(:) %{DATA:SYSLOGID}(:) SNMP_TRAP: Pool /Common/%{DATA:POOLNAME} member %{DATA} \\(ip:port=%{DATA:MEMBER}\\) state change %{DATA:OLDSTATUS} --> %{DATA:STATUS}\\\\%{GREEDYDATA}",
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbmonitortimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{DATA:poolname} member %{DATA} \\(ip:port=%{DATA:member}\\) state change %{DATA:OLDstatus} --> %{DATA:status} %{GREEDYDATA}",
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbmonitortimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{DATA:poolname} member %{DATA} \\(ip:port=%{DATA:member}\\) state change %{DATA:OLDstatus} --> %{DATA:status}\\\\%{GREEDYDATA}",
 
         #Catch all other events
         "%{GREEDYDATA:GROKFAILEDMESSAGE}",
     ]
   )
-
-  #Del unwanted fields in Event
-  del(.headers)
-  del(.message_key)
-  del(.offset)
-  del(.partition)
-  del(.source_type)
-  del(.topic)
-  del(.host)
-  del(.message)
-  del(.timestamp)
-  del(.source_type)
-  del(.name10)
-  del(.name11)
-  del(.pid)
-  del(.program)
-  del(.LOGLEVEL)
-  del(.SYSLOGID)
-  del(.SYSLOGPROG)
+ 
   del(.GROKFAILEDMESSAGE)
 '''
 
@@ -123,7 +115,7 @@ source = '''
   	abort
   }
   #Drop events that have 'slot' as device name (Logs from vcmp guest devices)
-  if contains(string!(.DEVICENAME), "slot") {
+  if contains(string!(.devicename), "slot") {
     abort
   }
 '''
@@ -134,33 +126,33 @@ inputs = [ "my_transform_reduced" ]
 source = '''
   .YEAR = join!(slice!(split(to_string(now()), "-",), start:0, end:1))
 
-  if (exists(.LBMONITORTIMESTAMP)) {
-      .LBMONITORTIMESTAMP_NEW_DATE_STRING, err = .YEAR + " " + .LBMONITORTIMESTAMP
-      .LBMONITORTIMESTAMP, err = parse_timestamp(.LBMONITORTIMESTAMP_NEW_DATE_STRING, format: "%Y %b %d %X")
+  if (exists(.lbmonitortimestamp)) {
+      .lbmonitortimestamp_new_date_string, err = .YEAR + " " + .lbmonitortimestamp
+      .lbmonitortimestamp, err = parse_timestamp(.lbmonitortimestamp_new_date_string, format: "%Y %b %d %X")
   }
-  if (exists(.LBADMINTIMESTAMP)) {
-      .LBADMINTIMESTAMP_NEW_DATE_STRING, err = .YEAR + " " + .LBADMINTIMESTAMP
-      .LBADMINTIMESTAMP, err = parse_timestamp(.LBADMINTIMESTAMP_NEW_DATE_STRING, format: "%Y %b %d %X")
+  if (exists(.lbadmintimestamp)) {
+      .lbadmintimestamp_new_date_string, err = .YEAR + " " + .lbadmintimestamp
+      .lbadmintimestamp, err = parse_timestamp(.lbadmintimestamp_new_date_string, format: "%Y %b %d %X")
   }
 
   del(.YEAR)
-  del(.LBMONITORTIMESTAMP_NEW_DATE_STRING)
-  del(.LBADMINTIMESTAMP_NEW_DATE_STRING)
+  del(.lbmonitortimestamp_new_date_string)
+  del(.lbadmintimestamp_new_date_string)
 
-  if (.STATUS) == "up" {
-      .STATUS = "Available"
-  } else if  (.STATUS) == "down" {
-      .STATUS = "Offline"
-  } else if  (.STATUS) == "red" {
-      .STATUS = "Offline"
-  } else if (.STATUS) == "green" {
-      .STATUS = "Available"
-  } else if (.STATUS) == "force" {
-      .STATUS = "Offline"
-  } else if (.STATE) == "forced disabled" {
-      .STATE = "Disabled"
-  } else if (.STATE) == "enabled" {
-      .STATE = "Enabled"
+  if (.status) == "up" {
+      .status = "Available"
+  } else if  (.status) == "down" {
+      .status = "Offline"
+  } else if  (.status) == "red" {
+      .status = "Offline"
+  } else if (.status) == "green" {
+      .status = "Available"
+  } else if (.status) == "force" {
+      .status = "Offline"
+  } else if (.state) == "forced disabled" {
+      .state = "Disabled"
+  } else if (.state) == "enabled" {
+      .state = "Enabled"
   }
 '''
 ```
@@ -175,6 +167,7 @@ The [Sink](https://vector.dev/docs/reference/configuration/sinks/) component del
 
 In the following example, Vector uses a `redis` sink and publishes the observability data to a redis channel.
 
+- Redis Sink
 ```toml
 ## SINK SECTION
 [sinks.redis]
@@ -187,7 +180,10 @@ key = "vector"
 
   [sinks.redis.encoding]
   codec = "json"
-  
+```
+
+- Console Sink
+```toml
 #[sinks.console]
 #  inputs = ["my_transform_normalize"]
 #  type = "console"
@@ -250,21 +246,17 @@ def redis_client():
     for message in p.listen():
         if message['type'] == 'message':
             data = json.loads(message['data'].decode('utf-8'))
-            if "LBMONITORTIMESTAMP" in data:
+            if "lbmonitortimestamp" in data:
                 r.hset(
-                    f"{data['DEVICENAME']}:{data['POOLNAME']}", 
-                    f"{data['MEMBER']}_status", data['STATUS'],
-                    f"{data['MEMBER']}_monitortimestamp", data['LBMONITORTIMESTAMP'] 
+                    f"{data['devicename']}:{data['poolname']}", 
+                    f"{data['member']}~status", data['status'],
+                    f"{data['member']}~monitortimestamp", data['lbmonitortimestamp'] 
                 )
-                r.hsetnx(
-                    f"{data['DEVICENAME']}:{data['POOLNAME']}", 
-                    f"{data['MEMBER']}_state", "Enabled" 
-                )
-            elif "LBADMINTIMESTAMP" in data:
+            elif "lbadmintimestamp" in data:
                 r.hset(
-                    f"{data['DEVICENAME']}:{data['POOLNAME']}", 
-                    f"{data['MEMBER']}_state", data['STATE'],
-                    f"{data['MEMBER']}_admintimestamp", data['LBADMINTIMESTAMP'] 
+                    f"{data['devicename']}:{data['poolname']}", 
+                    f"{data['member']}~state", data['state'],
+                    f"{data['member']}~admintimestamp", data['lbadmintimestamp'] 
                 )
 
 if __name__ == "__main__":
