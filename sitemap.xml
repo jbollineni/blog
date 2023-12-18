@@ -76,6 +76,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://blog.neni.io/blog/category/redis/</loc>
+         <lastmod>2023-12-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://blog.neni.io/blog/category/f5/</loc>
          <lastmod>2023-12-18</lastmod>
          <changefreq>daily</changefreq>
