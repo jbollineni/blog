@@ -1,0 +1,122 @@
+```{.bash .annotate }
+./start_uvicorn_server.sh # (1) consectetur adipiscing elit.
+```
+
+1.  :man_raising_hand: I'm an annotation! I can contain `code`, __formatted
+    text__, images, ... basically anything that can be expressed in Markdown.
+
+
+
+
+####
+
+hset bigip01a.example.net:p_exampleapp-1s_80 10.1.1.51:80~status Available 10.1.1.51:80~state Enabled 10.1.1.51:80~monitortimestamp "2023-12-17T11:08:54.836Z" 10.1.1.51:80~admintimestamp "2023-12-17T11:08:54.836Z" 
+
+hset bigip01a.example.net:p_exampleapp-1s_80 10.1.1.52:80~status Offline 10.1.1.52:80~state Enabled 10.1.1.52:80~monitortimestamp "2023-12-17T11:09:11.836Z" 10.1.1.52:80~admintimestamp "2023-12-17T11:08:54.836Z" 
+
+hset bigip01a.example.net:p_exampleapp-1s_80 10.1.1.53:80~status Available 10.1.1.53:80~state Enabled 10.1.1.53:80~monitortimestamp "2023-12-17T11:08:54.836Z" 10.1.1.53:80~admintimestamp "2023-12-17T11:08:54.836Z" 
+
+#####
+
+
+## SOURCE SECTION
+[sources.my_source_id]
+type = "socket"
+address = "192.168.99.122:8014"
+mode = "udp"
+
+# TRANSFORM SECTION
+[transforms.my_transform_catch]
+type = "remap"
+inputs = [ "my_source_id" ]
+source = '''
+  #Drop any log events that do NOT contain the keyword 'Pool'
+  if !match_any(string!(.message), [r'Pool'])
+  {
+  abort
+  }
+
+    #Replace occurences of "\n" character in the log event
+    .message = replace(string!(.message), "\n", "")
+  
+	#Parsing log events that contain the keyword 'Pool'
+  . = parse_groks!(
+      string!(.message),
+      patterns: [
+        #SLB related parser
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbmonitortimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{GREEDYDATA:poolname} member /Common/%{GREEDYDATA:member} monitor status %{DATA:status}. %{GREEDYDATA}",
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbadmintimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{GREEDYDATA:poolname} member /Common/%{GREEDYDATA:member} session status %{GREEDYDATA:state}.",
+
+        #GSLB related parser
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbmonitortimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{DATA:poolname} member %{DATA} \\(ip:port=%{DATA:member}\\) state change %{DATA:OLDstatus} --> %{DATA:status} %{GREEDYDATA}",
+        "%{GREEDYDATA}%{SYSLOGTIMESTAMP:lbmonitortimestamp} %{HOSTNAME:devicename} %{GREEDYDATA} Pool /Common/%{DATA:poolname} member %{DATA} \\(ip:port=%{DATA:member}\\) state change %{DATA:OLDstatus} --> %{DATA:status}\\\\%{GREEDYDATA}",
+
+        #Catch all other events
+        "%{GREEDYDATA:GROKFAILEDMESSAGE}",
+    ]
+  )
+ 
+  del(.GROKFAILEDMESSAGE)
+'''                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+
+[transforms.my_transform_reduced]
+type = "remap"
+inputs = [ "my_transform_catch" ]
+source = '''
+  #Drop empty events
+  if is_empty(.) {
+  	abort
+  }
+  #Drop events that have 'slot' as device name (Logs from vcmp guest devices)
+  if contains(string!(.devicename), "slot") {
+    abort
+  }
+'''
+
+[transforms.my_transform_normalize]
+type = "remap"
+inputs = [ "my_transform_reduced" ]
+source = '''
+  .YEAR = join!(slice!(split(to_string(now()), "-",), start:0, end:1))
+
+  if (exists(.lbmonitortimestamp)) {
+      .lbmonitortimestamp_new_date_string, err = .YEAR + " " + .lbmonitortimestamp
+      .lbmonitortimestamp, err = parse_timestamp(.lbmonitortimestamp_new_date_string, format: "%Y %b %d %X")
+  }
+  if (exists(.lbadmintimestamp)) {
+      .lbadmintimestamp_new_date_string, err = .YEAR + " " + .lbadmintimestamp
+      .lbadmintimestamp, err = parse_timestamp(.lbadmintimestamp_new_date_string, format: "%Y %b %d %X")
+  }
+
+  del(.YEAR)
+  del(.lbmonitortimestamp_new_date_string)
+  del(.lbadmintimestamp_new_date_string)
+
+  if (.status) == "up" {
+      .status = "Available"
+  } else if  (.status) == "down" {
+      .status = "Offline"
+  } else if  (.status) == "red" {
+      .status = "Offline"
+  } else if (.status) == "green" {
+      .status = "Available"
+  } else if (.status) == "force" {
+      .status = "Offline"
+  } else if (.state) == "forced disabled" {
+      .state = "Disabled"
+  } else if (.state) == "enabled" {
+      .state = "Enabled"
+  }
+'''
+
+## SINK SECTION
+[sinks.redis]
+type = "redis"
+inputs = [ "my_transform_normalize" ]
+data_type = "channel"
+endpoint = "redis://192.168.8.8:6379/0"
+
+key = "vector"
+
+  [sinks.redis.encoding]
+  codec = "json"

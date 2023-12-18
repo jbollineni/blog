@@ -17,6 +17,10 @@ This article is part one of a series discussing various components and configura
 
 <!-- more -->
 
+[Part2: https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/](https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/)
+
+[Part3: https://blog.neni.io/blog/display-f5-data-from-redis/](https://blog.neni.io/blog/display-f5-data-from-redis/)
+
 ## Elements
 
 <br>
@@ -230,7 +234,7 @@ Vector's Sink section shown above uses Redis sink to publish the events to the c
 
 A Redis client is required to subscribe to the Redis channel, receive messages, and then write data to a Redis database.
 
-*Sample Redis Client script.*
+#### Redis Client script
 
 ```py
 import redis
@@ -238,7 +242,7 @@ import json
 
 def redis_client():
     #redis connection object
-    r = redis.Redis(host="localhost", port=6379, db=0)
+    r = redis.Redis(host="localhost", port=6379, db=1)
     p = r.pubsub()
     #subscribe to 'vector' channel
     p.subscribe('vector')

@@ -18,6 +18,10 @@ While SNMP polling, Rest API calls, or F5 Telemetry iApp can be used to retrieve
 
 <!-- more -->
 
+[Part1: https://blog.neni.io/blog/vector-redis-f5-syslogs/](https://blog.neni.io/blog/vector-redis-f5-syslogs/)
+
+[Part3: https://blog.neni.io/blog/display-f5-data-from-redis/](https://blog.neni.io/blog/display-f5-data-from-redis/)
+
 ## Sample Pool logs
 
 ### SLB

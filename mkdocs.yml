@@ -1,18 +1,18 @@
 
 # Project information
-site_name: blog
+site_name: neni.io
 site_url: https://blog.neni.io
 site_author: Jana Bollineni
 site_description: >-
   blog.neni.io
 
-# Copyright
-#copyright: Copyright &copy; 2022 - 2023 Jana Bollineni
+#Copyright
+copyright: Copyright &copy; 2022 - 2023 Jana Bollineni
 
 # Configuration
 theme:
   name: material
-  custom_dir: material/overrides
+  #custom_dir: material/overrides
   features:
     - announce.dismiss
     - content.action.edit
@@ -26,7 +26,7 @@ theme:
     # - navigation.expand
     - navigation.footer
     - navigation.indexes
-    # - navigation.instant
+    - navigation.instant
     # - navigation.prune
     - navigation.path
     - navigation.sections
@@ -58,6 +58,7 @@ theme:
   favicon: assets/favicon.png
   icon:
     logo: logo
+    annotation: material/circle-medium
 
 # Plugins
 plugins:
@@ -85,12 +86,8 @@ extra:
       link: https://github.com/jbollineni
     # - icon: fontawesome/brands/docker
     #   link: https://hub.docker.com/r/squidfunk/mkdocs-material/
-    # - icon: fontawesome/brands/python
-    #   link: https://pypi.org/project/mkdocs-material/
-    # - icon: fontawesome/brands/mastodon
-    #   link: https://fosstodon.org/@squidfunk
-    # - icon: fontawesome/brands/twitter
-    #   link: https://twitter.com/squidfunk
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/jbollineni
 
 extra_css:
   #- assets/view-bigimg.css
@@ -105,6 +102,7 @@ markdown_extensions:
   - def_list
   - footnotes
   - md_in_html
+  - pymdownx.superfences
   - toc:
       permalink: true
   - pymdownx.arithmatex:
@@ -112,7 +110,7 @@ markdown_extensions:
   - pymdownx.betterem:
       smart_enable: all
   - pymdownx.caret
-  - pymdownx.details
+  #- pymdownx.details
   - pymdownx.emoji:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
       emoji_index: !!python/name:material.extensions.emoji.twemoji
@@ -122,21 +120,21 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.keys
-  - pymdownx.magiclink:
-      normalize_issue_symbols: true
-      repo_url_shorthand: true
-      user: squidfunk
-      repo: mkdocs-material
+  # - pymdownx.magiclink:
+  #     normalize_issue_symbols: true
+  #     repo_url_shorthand: true
+  #     user: squidfunk
+  #     repo: mkdocs-material
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.snippets:
       auto_append:
         - includes/mkdocs.md
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  # - pymdownx.superfences:
+  #     custom_fences:
+  #       - name: mermaid
+  #         class: mermaid
+  #         format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
       combine_header_slug: true
@@ -146,6 +144,8 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+  - pymdownx.details
+  
 
 
 # Page tree
