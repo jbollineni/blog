@@ -47,7 +47,7 @@ The [Source](https://vector.dev/docs/reference/configuration/sources/) component
 ## SOURCE SECTION
 [sources.my_source_id]
 type = "socket"
-address = "10.1.1.100:8014"
+address = "192.168.99.122:8014"
 mode = "udp"
 ```
 
