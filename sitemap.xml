@@ -21,11 +21,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://blog.neni.io/blog/kea-dhcp-as-a-container/</loc>
-         <lastmod>2024-03-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://blog.neni.io/blog/snapcast-server-in-a-container/</loc>
          <lastmod>2024-03-26</lastmod>
          <changefreq>daily</changefreq>
@@ -61,11 +56,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://blog.neni.io/blog/archive/2024/</loc>
-         <lastmod>2024-03-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://blog.neni.io/blog/archive/2023/</loc>
          <lastmod>2024-03-26</lastmod>
          <changefreq>daily</changefreq>
@@ -77,21 +67,6 @@
     </url>
     <url>
          <loc>https://blog.neni.io/blog/archive/2020/</loc>
-         <lastmod>2024-03-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://blog.neni.io/blog/category/kea/</loc>
-         <lastmod>2024-03-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://blog.neni.io/blog/category/dhcp/</loc>
-         <lastmod>2024-03-26</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://blog.neni.io/blog/category/docker/</loc>
          <lastmod>2024-03-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
