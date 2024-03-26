@@ -20,15 +20,15 @@ This article is part three of a series, and it describes steps to retrieve F5 Bi
 
 <!-- more -->
 
-[Part1: https://blog.neni.io/blog/vector-redis-f5-syslogs/](https://blog.neni.io/blog/vector-redis-f5-syslogs/)
+[Part1: https://blog.neni.io/blog/vector-redis-f5-syslogs/](vector-redis-f5-syslogs-1.md)
 
-[Part2: https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/](https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/)
+[Part2: https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/](vector-redis-f5-syslogs-2.md)
 
 ## Components
 
 - Python App for HTTP API based on [FastAPI](https://fastapi.tiangolo.com/)
 
-- [Redis](vector-redis-f5-syslogs#redis): Database where the `wip`, `vip` or `pool` data is stored.
+- [Redis](vector-redis-f5-syslogs-1.md#redis): Database where the `wip`, `vip` or `pool` data is stored.
 
 ## Designing an API endpoint
 

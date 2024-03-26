@@ -17,9 +17,9 @@ This article is part one of a series discussing various components and configura
 
 <!-- more -->
 
-[Part2: https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/](https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/)
+[Part2: https://blog.neni.io/blog/parsing-f5-syslogs-with-vector/](vector-redis-f5-syslogs-2.md)
 
-[Part3: https://blog.neni.io/blog/display-f5-data-from-redis/](https://blog.neni.io/blog/display-f5-data-from-redis/)
+[Part3: https://blog.neni.io/blog/display-f5-data-from-redis/](vector-redis-f5-syslogs-3.md)
 
 ## Elements
 
@@ -162,7 +162,7 @@ source = '''
 ```
 
 !!! note ""
-    See [Part2: Parsing F5 syslogs with Vector](/blog/parsing-f5-syslogs-with-vector/) to understand Grok parsing in detail
+    See [Part2: Parsing F5 syslogs with Vector](vector-redis-f5-syslogs-2.md) to understand Grok parsing in detail
 
 
 #### Sinks
@@ -278,4 +278,6 @@ Following is an example of hash datastore when viewed using [RedisInsight](https
 </div>
 
 
-[Part2: Parsing F5 syslogs with Vector](/blog/parsing-f5-syslogs-with-vector/)
+[Part2: Parsing F5 syslogs with Vector](vector-redis-f5-syslogs-2.md)
+
+

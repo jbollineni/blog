@@ -18,9 +18,9 @@ While SNMP polling, Rest API calls, or F5 Telemetry iApp can be used to retrieve
 
 <!-- more -->
 
-[Part1: https://blog.neni.io/blog/vector-redis-f5-syslogs/](https://blog.neni.io/blog/vector-redis-f5-syslogs/)
+[Part1: https://blog.neni.io/blog/vector-redis-f5-syslogs/](vector-redis-f5-syslogs-1.md)
 
-[Part3: https://blog.neni.io/blog/display-f5-data-from-redis/](https://blog.neni.io/blog/display-f5-data-from-redis/)
+[Part3: https://blog.neni.io/blog/display-f5-data-from-redis/](vector-redis-f5-syslogs-3.md)
 
 ## Sample Pool logs
 
@@ -208,10 +208,10 @@ parse_groks!(
 
 ## References
 
-https://my.f5.com/manage/s/article/K16008
+[https://my.f5.com/manage/s/article/K16008](https://my.f5.com/manage/s/article/K16008)
 
-https://github.com/hpcugent/logstash-patterns/blob/master/files/grok-patterns
+[https://github.com/hpcugent/logstash-patterns/blob/master/files/grok-patterns](https://github.com/hpcugent/logstash-patterns/blob/master/files/grok-patterns)
 
-https://rbuckton.github.io/regexp-features/engines/oniguruma.html
+[https://rbuckton.github.io/regexp-features/engines/oniguruma.html](https://rbuckton.github.io/regexp-features/engines/oniguruma.html)
 
-https://stackoverflow.com/questions/26474873/how-do-i-match-a-newline-in-grok-logstash
+[https://stackoverflow.com/questions/26474873/how-do-i-match-a-newline-in-grok-logstash](https://stackoverflow.com/questions/26474873/how-do-i-match-a-newline-in-grok-logstash)

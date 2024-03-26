@@ -72,6 +72,7 @@ plugins:
       post_excerpt: required
   - minify:
       minify_html: true
+  - tags
 
 
 # Additional configuration
@@ -153,3 +154,8 @@ nav:
   #- Home: index.md
   - Blog:
     - blog/index.md
+  # - Networking:
+  #   - networking/command_reference.md
+  # - Linux:
+  #   - Command Reference: linux/command_reference.md
+
